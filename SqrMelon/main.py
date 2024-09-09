@@ -117,7 +117,7 @@ class App(QMainWindowState):
         viewDock = self._addDockWidget(window, '3D View', where=Qt.DockWidgetArea.TopDockWidgetArea)
         self.__sceneView.setDockWidget(viewDock)
         self.__viewDock = viewDock  # Need this for F11 feature
-        self.__restoreFullScreenInfo: Optional[tuple[QSize, bool]] = None
+        self.__restoreFullScreenInfo: Optional[tuple[QSize, bool, bool]] = None
         logDock = self._addDockWidget(PyDebugLog.create(), 'Python log', where=Qt.DockWidgetArea.TopDockWidgetArea)
         self.tabifyDockWidget(logDock, viewDock)
 
@@ -373,7 +373,7 @@ class App(QMainWindowState):
 
         if not dockWidget.isFullScreen():
             floating = dockWidget.isFloating()
-            self.__restoreFullScreenInfo = dockWidget.size(), floating
+            self.__restoreFullScreenInfo = dockWidget.size(), floating, dockWidget.visibleRegion().isEmpty()
             if not floating:
                 dockWidget.setFloating(True)
             dockWidget.showFullScreen()
@@ -384,6 +384,8 @@ class App(QMainWindowState):
                 dockWidget.setFloating(self.__restoreFullScreenInfo[1])
             if dockWidget.isFloating():
                 dockWidget.resize(self.__restoreFullScreenInfo[0])
+            if not self.__restoreFullScreenInfo[2]:
+                dockWidget.raise_()
 
     def __toggleUILock(self, state: bool) -> None:
         gSettings.setValue('lockui', '1' if state else '0')
